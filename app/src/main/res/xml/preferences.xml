@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory
+        android:title="TWEET ID">
+
+        <EditTextPreference
+            android:key="tweet_id"
+            android:title="Tweet ID"
+            android:summary="Set tweet ID"
+            android:dialogTitle="Set tweet ID"
+            android:defaultValue="0" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="AUTHOR INFORMATION">
+
+        <EditTextPreference
+            android:key="author_name_common"
+            android:title="Author name"
+            android:summary="Set author name"
+            android:dialogTitle="Set author name"
+            android:defaultValue="anonymous" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="ENCRYPTION">
+
+        <CheckBoxPreference
+            android:key="encryption_use"
+            android:title="Use encryption"
+            android:summary="Encrypt Direct Messages with a Private Key"
+            android:defaultValue="false" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
