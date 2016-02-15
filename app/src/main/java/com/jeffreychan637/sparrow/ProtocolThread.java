@@ -43,7 +43,7 @@ public class ProtocolThread extends Thread {
             serverMode = false;
             initiateConnection(devices.get(i).getDevice(), bluetoothAdapter);
         }
-        startServer(bluetoothAdapter);
+        startServer();
 
     };
 
@@ -82,12 +82,14 @@ public class ProtocolThread extends Thread {
         }
     };
 
-    private void startServer(BluetoothAdapter BA) {
-        serverMode = true;
-        stopEverything();
-        Log.d("sad", "starting server");
-        serverThread = new ServerThread(BA, this);
-        serverThread.start();
+    public void startServer() {
+        if (serverThread == null || !serverThread.isInterrupted()) {
+            serverMode = true;
+            stopEverything();
+            Log.d("sad", "starting server");
+            serverThread = new ServerThread(bluetoothAdapter, this);
+            serverThread.start();
+        }
     }
 
     public byte[] getHandshake() { return dataHandler.getHandshake(); }

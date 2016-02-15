@@ -151,6 +151,7 @@ public class ConnectionThread extends Thread {
             } else if (currentState == ExchangeState.GOT_DATA && !isClient) {
                 protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
                 protocolThread.stopEverything(); //ASSUMES WE WILL ONLY EVER EXCHANGE DATA ONCE
+                protocolThread.startServer();
                 Log.d("connection thread", "DONE, CLOSING CONNECTION.");
             }
         } catch (IOException e) {
