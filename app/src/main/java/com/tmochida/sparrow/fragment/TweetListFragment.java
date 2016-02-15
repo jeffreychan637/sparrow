@@ -31,6 +31,7 @@ public class TweetListFragment extends ListFragment {
     private Context mContext;
     private SharedPreferences mSharedPrefs;
 
+    private TweetsAdapter mTweetsAdapter;
     private TweetStorage mTweetStorage;
     private ArrayList<TweetContainer> mGlobalTweets;
     private ArrayList<TweetContainer> mViewableTweets;
@@ -56,6 +57,8 @@ public class TweetListFragment extends ListFragment {
         SharedPreferences.Editor editor = mSharedPrefs.edit();
         editor.putString(KEY_AUTHOR_ID, Integer.toString(id+1));
         editor.apply();
+
+        refreshView();
     }
 
     @Override
@@ -76,8 +79,8 @@ public class TweetListFragment extends ListFragment {
             mViewableTweets.add(tc);
         }
 
-        TweetsAdapter tweetsAdapter = new TweetsAdapter(getActivity(), R.layout.item_tweet, mViewableTweets);
-        setListAdapter(tweetsAdapter);
+        mTweetsAdapter = new TweetsAdapter(getActivity(), R.layout.item_tweet, mViewableTweets);
+        setListAdapter(mTweetsAdapter);
     }
 
     @Override
@@ -105,5 +108,9 @@ public class TweetListFragment extends ListFragment {
 
     public ArrayList<TweetContainer> getViewableTweets() {
         return mViewableTweets;
+    }
+
+    public void refreshView() {
+        mTweetsAdapter.notifyDataSetChanged();
     }
 }

@@ -142,7 +142,7 @@ public class MainActivity extends Activity implements TweetCreateFragment.OnUser
         TweetExchange tweetExchange = new TweetExchange(tweets);
         return tweetExchange.encode();
     };
-
+z
     /* Decodes passed in byte[] into a TweetExchange, adds new messages in local tweet list. */
     public void processReceivedData(byte[] data) {
         ArrayList<TweetContainer> globalTweets = mFeedFragment.getGlobalTweets();
@@ -175,7 +175,7 @@ public class MainActivity extends Activity implements TweetCreateFragment.OnUser
             if (t.recipient.length() == 0 || t.recipient.equals(author))
                 viewableTweets.add(tc);
         }
-
+        mFeedFragment.refreshView();
         Log.d("PROTOBUFF_TWEETEXCHANGE", "Received TweetExchange. Number of tweets: " + exchange.tweets.size());
     }
 }
