@@ -175,7 +175,7 @@ public class MainActivity extends Activity implements TweetCreateFragment.OnUser
             if (t.recipient.length() == 0 || t.recipient.equals(author))
                 viewableTweets.add(tc);
         }
-        mFeedFragment.refreshView();
+        mFeedFragment.getAdapter().notifyDataSetChanged();
         Log.d("PROTOBUFF_TWEETEXCHANGE", "Received TweetExchange. Number of tweets: " + exchange.tweets.size());
     }
 }

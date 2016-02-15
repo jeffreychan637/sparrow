@@ -9,7 +9,9 @@ import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 
+import com.tmochida.sparrow.MainActivity;
 import com.tmochida.sparrow.R;
 import com.tmochida.sparrow.tweet.TweetContainer;
 import com.tmochida.sparrow.tweet.TweetStorage;
@@ -58,7 +60,6 @@ public class TweetListFragment extends ListFragment {
         editor.putString(KEY_AUTHOR_ID, Integer.toString(id+1));
         editor.apply();
 
-        refreshView();
     }
 
     @Override
@@ -110,7 +111,7 @@ public class TweetListFragment extends ListFragment {
         return mViewableTweets;
     }
 
-    public void refreshView() {
-        mTweetsAdapter.notifyDataSetChanged();
+    public TweetsAdapter getAdapter() {
+        return mTweetsAdapter;
     }
 }
