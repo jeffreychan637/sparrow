@@ -142,7 +142,7 @@ public class MainActivity extends Activity implements TweetCreateFragment.OnUser
         TweetExchange tweetExchange = new TweetExchange(tweets);
         return tweetExchange.encode();
     };
-z
+
     /* Decodes passed in byte[] into a TweetExchange, adds new messages in local tweet list. */
     public void processReceivedData(byte[] data) {
         ArrayList<TweetContainer> globalTweets = mFeedFragment.getGlobalTweets();
