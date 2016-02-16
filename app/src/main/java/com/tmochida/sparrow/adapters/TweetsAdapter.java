@@ -79,7 +79,7 @@ public class TweetsAdapter extends ArrayAdapter<TweetContainer> {
                 String symmetric = tweet.key_symmetric;
                 byte[] key_aes = Base64.decode(symmetric, Base64.DEFAULT);
                 try {
-                    content = new String(Encryption.decrypt(key_aes, tweet.content.getBytes()));
+                    content = new String(Encryption.decrypt(key_aes, Base64.decode(tweet.content, Base64.DEFAULT)));
                 } catch (Exception e) {
                     Log.d("PROTOBUFF", "error! " + key_aes.length);
                     e.printStackTrace();
