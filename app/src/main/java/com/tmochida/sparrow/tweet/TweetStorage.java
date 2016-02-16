@@ -14,7 +14,8 @@ import java.util.ArrayList;
  */
 public class TweetStorage {
     public static final String FILENAME_TWEETS = "tweets.data";
-    public static final String FILENAME_KEYS = "tweets.keys";
+    public static final String FILENAME_KEYPAIR_SELF = "keys.self";
+    public static final String FILENAME_KEYAPIR_ELSE = "keys.else";
 
     public void saveTweets(Context context, ArrayList<TweetContainer> tweets) {
         File file = new File(context.getFilesDir(), FILENAME_TWEETS);
@@ -42,8 +43,8 @@ public class TweetStorage {
         return tweets;
     }
 
-    public void saveKeys(Context context, ArrayList<TweetKeyPair> keys) {
-        File file = new File(context.getFilesDir(), FILENAME_KEYS);
+    public void saveKeyPairs(Context context, ArrayList<KeyPairContainer> keys, boolean self) {
+        File file = new File(context.getFilesDir(), getKeyPairFileName(self));
         try {
             FileOutputStream stream = new FileOutputStream(file);
             ObjectOutputStream out = new ObjectOutputStream(stream);
@@ -53,18 +54,25 @@ public class TweetStorage {
         }
     }
 
-    public ArrayList<TweetKeyPair> loadKeys(Context context) {
-        ArrayList<TweetKeyPair> keys;
+    public ArrayList<KeyPairContainer> loadKeys(Context context, boolean self) {
+        ArrayList<KeyPairContainer> keys;
 
-        File file = new File(context.getFilesDir(), FILENAME_TWEETS);
+        File file = new File(context.getFilesDir(), getKeyPairFileName(self));
         try {
             FileInputStream stream = new FileInputStream(file);
             ObjectInputStream in = new ObjectInputStream(stream);
-            keys = (ArrayList<TweetKeyPair>) in.readObject();
+            keys = (ArrayList<KeyPairContainer>) in.readObject();
             in.close();
         } catch (Exception e) {
             return new ArrayList<>();
         }
         return keys;
+    }
+
+    private String getKeyPairFileName(boolean self) {
+        if (self)
+            return FILENAME_KEYPAIR_SELF;
+        else
+            return FILENAME_KEYAPIR_ELSE;
     }
 }
