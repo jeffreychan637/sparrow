@@ -1,4 +1,4 @@
-package com.tmochida.sparrow.fragment;
+package com.tmochida.sparrow.fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.tmochida.sparrow.R;
+import com.tmochida.sparrow.interfaces.OnUserTweetListener;
 
 public class TweetCreateFragment extends Fragment {
     OnUserTweetListener mCallback;
@@ -18,10 +19,6 @@ public class TweetCreateFragment extends Fragment {
     private Button mTweetBtn;
     private EditText mRecipientText;
     private EditText mContentText;
-
-    public interface OnUserTweetListener {
-        void sendTweet(String recipient, String content);
-    }
 
     public void sendTweet(String recipient, String content) {
         mCallback.sendTweet(recipient, content);

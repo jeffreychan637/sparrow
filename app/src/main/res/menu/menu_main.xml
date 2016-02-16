@@ -12,4 +12,19 @@
         android:orderInCategory="10"
         android:title="@string/action_bluetooth"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_keys_view_self"
+        android:orderInCategory="3"
+        android:title="@string/action_keys_view_self"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_keys_add"
+        android:orderInCategory="2"
+        android:title="@string/action_keys_add"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_keys_view"
+        android:orderInCategory="1"
+        android:title="@string/action_keys_view"
+        app:showAsAction="never" />
 </menu>

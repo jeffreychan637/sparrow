@@ -1,4 +1,4 @@
-package com.tmochida.sparrow.adapter;
+package com.tmochida.sparrow.adapters;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;

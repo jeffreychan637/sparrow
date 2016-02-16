@@ -1,0 +1,15 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    <TextView
+        android:id="@+id/keypair_author"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Author Name" />
+    <TextView
+        android:id="@+id/keypair_public"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Public Key" />
+</LinearLayout>
