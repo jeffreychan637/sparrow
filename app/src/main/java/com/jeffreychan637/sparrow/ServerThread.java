@@ -22,7 +22,11 @@ public class ServerThread extends Thread {
         BluetoothServerSocket tmp = null;
         try {
             tmp = BA.listenUsingRfcommWithServiceRecord(appName, appID);
-        } catch (IOException e) { }
+        } catch (IOException e) {
+            Log.d("asd", "uhh...tmp is not logged. WTF");
+            this.interrupt();
+        }
+
         bServerSocket = tmp;
         Log.d("asd", "start server thread");
     }

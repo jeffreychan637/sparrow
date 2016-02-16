@@ -117,8 +117,10 @@ public class BluetoothFragment extends Fragment {
     }
 
     private void makeSelfDiscoverable() {
-        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE); //make oneself discoverable
+        if (BA.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE); //make oneself discoverable
+        }
     };
 
     private void startProtocol() {

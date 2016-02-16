@@ -41,9 +41,7 @@ public class ConnectionThread extends Thread {
 
     public void run() {
         byte[] buffer = new byte[1024];  // buffer store for the stream
-        byte[] intBuffer = new byte[4];
         int bytesInMessage = 0;
-        int initialBytesRead = 0;
         int bytesRead = 0;
         boolean knowMessageLength = false;
 
@@ -59,62 +57,48 @@ public class ConnectionThread extends Thread {
                         buffer = new byte[bytesInMessage];
                         Log.d("connection", "created byte array of size: " + bytesInMessage);
                     }
-//                    if (knowMessageLength) {
-//                        if (bytesInMessage == 0) {
-//                            //bytesInMessage = java.nio.ByteBuffer.wrap(intBuffer).getInt();
-//                            //bytesInMessage = java.nio.ByteBuffer.wrap(intBuffer).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
-//                            // TODO: 2/14/16 verify endianess
-//                            //assumes first read will contain at least enough to get int
-//                            buffer = new byte[bytesInMessage];
-//                            Log.d("connection", "created byte array of size: " + bytesInMessage);
-//                        }
-                        bytesRead += inStream.read(buffer, bytesRead, buffer.length - bytesRead);
-                        Log.d("connection", "total Bytes read = " + bytesRead);
-                        Log.d("ds", Arrays.toString(buffer));
-                        if (bytesRead == bytesInMessage) {
-                            int currentExchangeState = protocolThread.getExchangeState();
-                            if (currentExchangeState == ExchangeState.NOT_EXCHANGING && !isClient) {
+                    bytesRead += inStream.read(buffer, bytesRead, buffer.length - bytesRead);
+                    Log.d("connection", "total Bytes read = " + bytesRead);
+                    Log.d("ds", Arrays.toString(buffer));
+                    if (bytesRead == bytesInMessage) {
+                        int currentExchangeState = protocolThread.getExchangeState();
+                        if (currentExchangeState == ExchangeState.NOT_EXCHANGING && !isClient) {
+                            protocolThread.setExchangeState(ExchangeState.GOT_HANDSHAKE);
+                            protocolThread.sendHandshake(buffer);
+                            Log.d("connection made", "got handshake!");
+                            write(protocolThread.getHandshake());
+                        } else if (currentExchangeState == ExchangeState.SENT_HANDSHAKE) {
+                            if (isClient) {
                                 protocolThread.setExchangeState(ExchangeState.GOT_HANDSHAKE);
-                                protocolThread.sendHandshake(buffer);
                                 Log.d("connection made", "got handshake!");
-                                write(protocolThread.getHandshake());
-                            } else if (currentExchangeState == ExchangeState.SENT_HANDSHAKE) {
-                                if (isClient) {
-                                    protocolThread.setExchangeState(ExchangeState.GOT_HANDSHAKE);
-                                    Log.d("connection made", "got handshake!");
-                                    protocolThread.sendHandshake(buffer);
-                                    // TODO: 2/13/16 read in first integer to figure out how many bytes i have to read - then send
-                                } else {
-                                    // TODO: 2/13/16 read a stream; have to listen multiple times can't assume just listening once
-                                    Log.d("connection made", "got data!");
-                                    protocolThread.setExchangeState(ExchangeState.GOT_DATA);
-                                    protocolThread.sendData(buffer);
-                                }
-                                write(protocolThread.getData());
-                            } else if (currentExchangeState == ExchangeState.SENT_DATA && isClient) {
-                                protocolThread.setExchangeState(ExchangeState.GOT_DATA);
-                                Log.d("connection made", "got data!");
-                                protocolThread.sendData(buffer);
-                                Log.d("connection thread", "DONE, CLOSING CONNECTION.");
-                                protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
-                                protocolThread.stopEverything();
-                                waitOn.notify();
-                                break;
-                                //ASSUMES WE WILL ONLY EVER EXCHANGE DATA ONCE
+                                protocolThread.sendHandshake(buffer);
+                                // TODO: 2/13/16 read in first integer to figure out how many bytes i have to read - then send
                             } else {
-                                Log.d("got data", "got data...but no exchange state");
-                                Log.d("got data", "CURRENT EXCHANGE STATE " + protocolThread.getExchangeState());
+                                // TODO: 2/13/16 read a stream; have to listen multiple times can't assume just listening once
+                                Log.d("connection made", "got data!");
+                                protocolThread.setExchangeState(ExchangeState.GOT_DATA);
+                                protocolThread.sendData(buffer);
                             }
-                            bytesInMessage = 0;
-                            initialBytesRead = 0;
-                            bytesRead = 0;
-                            knowMessageLength = false;
+                            write(protocolThread.getData());
+                        } else if (currentExchangeState == ExchangeState.SENT_DATA && isClient) {
+                            protocolThread.setExchangeState(ExchangeState.GOT_DATA);
+                            Log.d("connection made", "got data!");
+                            protocolThread.sendData(buffer);
+                            Log.d("connection thread", "DONE, CLOSING CONNECTION.");
+                            protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
+                            protocolThread.stopEverything();
+                            waitOn.notify();
+                            break;
+                            //ASSUMES WE WILL ONLY EVER EXCHANGE DATA ONCE
+                        } else {
+                            Log.d("got data", "got data...but no exchange state");
+                            Log.d("got data", "CURRENT EXCHANGE STATE " + protocolThread.getExchangeState());
                         }
-//                    } else {
-//                        Log.d("connection made", "running but not getting data");
-//                    }
+                        bytesInMessage = 0;
+                        bytesRead = 0;
+                        knowMessageLength = false;
+                    }
                 } catch (IOException e) {
-                    Log.d("connection made", "exception when listening - " + e.toString());
                     protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
                     if (isClient) {
                         waitOn.notify();
