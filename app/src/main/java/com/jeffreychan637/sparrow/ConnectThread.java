@@ -38,6 +38,7 @@ public class ConnectThread extends Thread {
         BA.cancelDiscovery();
         synchronized (waitOn) {
             try {
+                BA.cancelDiscovery();
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
                 Log.d("connect", "trying to connect socket" );
