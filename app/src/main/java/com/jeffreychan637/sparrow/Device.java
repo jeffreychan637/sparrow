@@ -4,29 +4,23 @@ import android.bluetooth.BluetoothDevice;
 
 /**
  * Created by jeffreychan on 2/9/16.
+ *
+ * This class is used to represent devices.
  */
 public class Device {
 
-    private String name;
-    private String address;
-    private BluetoothDevice device;
+    private String mName;
+    private BluetoothDevice mDevice;
 
-    public Device(String Dname, String Daddress, BluetoothDevice Ddevice) {
-        name = Dname;
-        address = Daddress;
-        device = Ddevice;
+    public Device(String name, BluetoothDevice device) {
+        mName = name;
+        mDevice = device;
 
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
+    public String getName() { return mName; }
 
     public BluetoothDevice getDevice() {
-        return device;
+        return mDevice;
     };
 }

@@ -10,22 +10,27 @@ import java.util.Arrays;
 
 /**
  * Created by jeffreychan on 2/9/16.
+ *
+ * This thread class is responsible for processing all connections. It is used to listen for
+ * data (i.e. handshakes and tweet exchanges) from other devices as well as send data out to
+ * these devices. It knows what to do with the data received and what data to send out by
+ * keeping track of the state of data exchange process.
  */
 public class ConnectionThread extends Thread {
-    private final BluetoothSocket bSocket;
-    private final DataInputStream inStream;
-    private final DataOutputStream outStream;
-    private final Object waitOn;
-    private final ProtocolThread protocolThread;
-    boolean isClient;
+    private final BluetoothSocket mBSocket;
+    private final DataInputStream mInStream;
+    private final DataOutputStream mOutStream;
+    private final Object mWaitOn;
+    private final ProtocolThread mProtocolThread;
+    boolean mIsClient;
 
-    public ConnectionThread(BluetoothSocket socket, Object waitON, ProtocolThread pt, boolean isCLient) {
-        bSocket = socket;
+    public ConnectionThread(BluetoothSocket socket, Object waitOn, ProtocolThread pt, boolean isClient) {
+        mBSocket = socket;
         DataInputStream tmpIn = null;
         DataOutputStream tmpOut = null;
-        waitOn = waitON;
-        protocolThread = pt;
-        isClient = isCLient;
+        mWaitOn = waitOn;
+        mProtocolThread = pt;
+        mIsClient = isClient;
 
         try {
             tmpIn = new DataInputStream(socket.getInputStream());
@@ -35,73 +40,73 @@ public class ConnectionThread extends Thread {
             Log.d("con", "error with tmpIN/OUT");
         }
 
-        inStream = tmpIn;
-        outStream = tmpOut;
+        mInStream = tmpIn;
+        mOutStream = tmpOut;
     }
 
+    /* This function basically runs the listener for this thread. Until the input stream
+     * is closed, this function will listen continuously for data from the connected device.
+     */
     public void run() {
-        byte[] buffer = new byte[1024];  // buffer store for the stream
+        byte[] buffer = new byte[1024];
         int bytesInMessage = 0;
         int bytesRead = 0;
         boolean knowMessageLength = false;
 
-        // Keep listening to the InputStream until an exception occurs
-        synchronized (waitOn) {
+        synchronized (mWaitOn) {
             while (true) {
                 try {
                     Log.d("connection made", "actually trying to read data coming in");
                     if (!knowMessageLength) {
                         knowMessageLength = true;
-                        bytesInMessage = inStream.readInt();
+                        bytesInMessage = mInStream.readInt();
                         Log.d("connection", "initial bytes read =  " + bytesInMessage);
                         buffer = new byte[bytesInMessage];
                         Log.d("connection", "created byte array of size: " + bytesInMessage);
                     }
-                    bytesRead += inStream.read(buffer, bytesRead, buffer.length - bytesRead);
+                    bytesRead += mInStream.read(buffer, bytesRead, buffer.length - bytesRead);
                     Log.d("connection", "total Bytes read = " + bytesRead);
                     Log.d("ds", Arrays.toString(buffer));
                     if (bytesRead == bytesInMessage) {
-                        int currentExchangeState = protocolThread.getExchangeState();
-                        if (currentExchangeState == ExchangeState.NOT_EXCHANGING && !isClient) {
-                            protocolThread.setExchangeState(ExchangeState.GOT_HANDSHAKE);
-                            protocolThread.sendHandshake(buffer);
+                        int currentExchangeState = mProtocolThread.getExchangeState();
+                        if (currentExchangeState == ExchangeState.NOT_EXCHANGING && !mIsClient) {
+                            mProtocolThread.setExchangeState(ExchangeState.GOT_HANDSHAKE);
+                            mProtocolThread.sendHandshake(buffer);
                             Log.d("connection made", "got handshake!");
-                            write(protocolThread.getHandshake());
+                            write(mProtocolThread.getHandshake());
                         } else if (currentExchangeState == ExchangeState.SENT_HANDSHAKE) {
-                            if (isClient) {
-                                protocolThread.setExchangeState(ExchangeState.GOT_HANDSHAKE);
+                            if (mIsClient) {
+                                mProtocolThread.setExchangeState(ExchangeState.GOT_HANDSHAKE);
                                 Log.d("connection made", "got handshake!");
-                                protocolThread.sendHandshake(buffer);
-                                // TODO: 2/13/16 read in first integer to figure out how many bytes i have to read - then send
+                                mProtocolThread.sendHandshake(buffer);
                             } else {
-                                // TODO: 2/13/16 read a stream; have to listen multiple times can't assume just listening once
                                 Log.d("connection made", "got data!");
-                                protocolThread.setExchangeState(ExchangeState.GOT_DATA);
-                                protocolThread.sendData(buffer);
+                                mProtocolThread.setExchangeState(ExchangeState.GOT_DATA);
+                                mProtocolThread.sendData(buffer);
                             }
-                            write(protocolThread.getData());
-                        } else if (currentExchangeState == ExchangeState.SENT_DATA && isClient) {
-                            protocolThread.setExchangeState(ExchangeState.GOT_DATA);
+                            write(mProtocolThread.getData());
+                        } else if (currentExchangeState == ExchangeState.SENT_DATA && mIsClient) {
+                            mProtocolThread.setExchangeState(ExchangeState.GOT_DATA);
                             Log.d("connection made", "got data!");
-                            protocolThread.sendData(buffer);
+                            mProtocolThread.sendData(buffer);
                             Log.d("connection thread", "DONE, CLOSING CONNECTION.");
-                            protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
-                            protocolThread.stopEverything();
-                            waitOn.notify();
+                            mProtocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
+                            mProtocolThread.stopEverything();
+                            mWaitOn.notify();
                             break;
                             //ASSUMES WE WILL ONLY EVER EXCHANGE DATA ONCE
                         } else {
                             Log.d("got data", "got data...but no exchange state");
-                            Log.d("got data", "CURRENT EXCHANGE STATE " + protocolThread.getExchangeState());
+                            Log.d("got data", "CURRENT EXCHANGE STATE " + mProtocolThread.getExchangeState());
                         }
                         bytesInMessage = 0;
                         bytesRead = 0;
                         knowMessageLength = false;
                     }
                 } catch (IOException e) {
-                    protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
-                    if (isClient) {
-                        waitOn.notify();
+                    mProtocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
+                    if (mIsClient) {
+                        mWaitOn.notify();
                     }
                     break;
                 }
@@ -109,55 +114,56 @@ public class ConnectionThread extends Thread {
         }
     }
 
-    /* Call this from the main activity to send data to the remote device */
+    /* This function is used to send data to remote devices. It prepends the amount of bytes
+     * that is being sent to all messages. */
     public void write(byte[] bytes) {
         try {
-            int currentState = protocolThread.getExchangeState();
+            int currentState = mProtocolThread.getExchangeState();
             Log.d("ds", Arrays.toString(bytes));
-            Log.d("ds", String.valueOf(outStream.size()));
-            if (isClient) {
+            Log.d("ds", String.valueOf(mOutStream.size()));
+            if (mIsClient) {
                 Log.d("ds", "Is client");
             } else {
                 Log.d("ds", "Is NOT client");
             }
-            outStream.writeInt(bytes.length);
+            mOutStream.writeInt(bytes.length);
             Log.d("write", "sent byte length of " + bytes.length);
-            outStream.write(bytes);
-            if (currentState == ExchangeState.NOT_EXCHANGING && isClient) {
-                protocolThread.setExchangeState(ExchangeState.SENT_HANDSHAKE);
+            mOutStream.write(bytes);
+            if (currentState == ExchangeState.NOT_EXCHANGING && mIsClient) {
+                mProtocolThread.setExchangeState(ExchangeState.SENT_HANDSHAKE);
             } else if (currentState == ExchangeState.GOT_HANDSHAKE) {
-                if (isClient) {
-                    protocolThread.setExchangeState(ExchangeState.SENT_DATA);
+                if (mIsClient) {
+                    mProtocolThread.setExchangeState(ExchangeState.SENT_DATA);
                 } else {
-                    protocolThread.setExchangeState(ExchangeState.SENT_HANDSHAKE);
+                    mProtocolThread.setExchangeState(ExchangeState.SENT_HANDSHAKE);
                 }
-                Log.d("asd", "isclient " + isClient);
-            } else if (currentState == ExchangeState.GOT_DATA && !isClient) {
-                protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
-                protocolThread.stopEverything(); //ASSUMES WE WILL ONLY EVER EXCHANGE DATA ONCE
-                protocolThread.startServer();
+                Log.d("asd", "isclient " + mIsClient);
+            } else if (currentState == ExchangeState.GOT_DATA && !mIsClient) {
+                mProtocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
+                mProtocolThread.stopEverything(); //ASSUMES WE WILL ONLY EVER EXCHANGE DATA ONCE
+                mProtocolThread.startServer();
                 Log.d("connection thread", "DONE, CLOSING CONNECTION.");
             }
         } catch (IOException e) {
-            protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
+            mProtocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
             Log.d("connection made", "exception when sending data" + e.toString());
-            if (isClient) {
-                waitOn.notify();
+            if (mIsClient) {
+                mWaitOn.notify();
             }
         }
     }
 
-    /* Call this from the main activity to shutdown the connection */
+    /* Call this to shutdown the connection */
     public void cancel() {
-        synchronized (waitOn) {
+        synchronized (mWaitOn) {
             try {
-                bSocket.close();
+                mBSocket.close();
             } catch (IOException e) {
 
             } finally {
-                protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
-                if (isClient) {
-                    waitOn.notify();
+                mProtocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
+                if (mIsClient) {
+                    mWaitOn.notify();
                 }
             }
         }

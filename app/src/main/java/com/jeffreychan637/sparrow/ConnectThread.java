@@ -10,49 +10,50 @@ import java.util.UUID;
 
 /**
  * Created by jeffreychan on 2/9/16.
+ *
+ * This class is responsible for connecting to the devices that are found via discovery. Once it
+ * connects, it passes on the connected socket to the Connection Thread.
  */
 public class ConnectThread extends Thread {
-    private final UUID appID = UUID.fromString("ae0267ba-82fe-4049-85b3-c8c1ad0ac854");
-    private final BluetoothSocket bSocket;
-    private final BluetoothDevice bDevice;
-    private final BluetoothAdapter BA;
-    private final ProtocolThread protocolThread;
-    private final Object waitOn;
+    private final UUID mAppID = UUID.fromString("ae0267ba-82fe-4049-85b3-c8c1ad0ac854");
+    private final BluetoothSocket mBSocket;
+    private final BluetoothAdapter mBluetoothAdaptor;
+    private final ProtocolThread mProtocolThread;
+    private final Object mWaitOn;
 
     public ConnectThread(BluetoothDevice device, BluetoothAdapter ba, ProtocolThread pr, Object waitON) {
         BluetoothSocket tmp = null;
-        bDevice = device;
-        BA = ba;
-        protocolThread = pr;
-        waitOn = waitON;
+        mBluetoothAdaptor = ba;
+        mProtocolThread = pr;
+        mWaitOn = waitON;
 
         // Get a BluetoothSocket to connect with the given BluetoothDevice
         try {
             Log.d("connect", "setting up socket" );
-            tmp = device.createRfcommSocketToServiceRecord(appID);
+            tmp = device.createRfcommSocketToServiceRecord(mAppID);
         } catch (IOException e) { }
-        bSocket = tmp;
+        mBSocket = tmp;
     }
 
     public void run() {
-        BA.cancelDiscovery();
-        synchronized (waitOn) {
+        mBluetoothAdaptor.cancelDiscovery();
+        synchronized (mWaitOn) {
             try {
-                BA.cancelDiscovery();
+                mBluetoothAdaptor.cancelDiscovery();
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
                 Log.d("connect", "trying to connect socket" );
-                bSocket.connect();
+                mBSocket.connect();
                 Log.d("connect", "connected socket - now want to manage connection");
-                protocolThread.manageConnection(bSocket, true);
+                mProtocolThread.manageConnection(mBSocket, true);
             } catch (IOException connectException) { //occurs in 12 seconds if connection fails
                 try {
-                    bSocket.close();
+                    mBSocket.close();
                     Log.d("ConnectThread", "Connection failed; closing socket");
                 } catch (IOException closeException) {
                     Log.d("ConnectThread", "Exception when connecting");
                 } finally {
-                    waitOn.notify();
+                    mWaitOn.notify();
                 }
             }
         }
@@ -60,13 +61,13 @@ public class ConnectThread extends Thread {
 
     /** Will cancel an in-progress connection, and close the socket */
     public void cancel() {
-        synchronized (waitOn) {
+        synchronized (mWaitOn) {
             try {
-                bSocket.close();
+                mBSocket.close();
             } catch (IOException e) {
             } finally {
-                protocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
-                waitOn.notify();
+                mProtocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
+                mWaitOn.notify();
             }
         }
     }

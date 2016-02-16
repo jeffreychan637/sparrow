@@ -20,6 +20,12 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jeffreychan on 2/8/16.
+ *
+ * This class starts the Bluetooth message passing protocol. It first requests that Bluetooth
+ * be turned on, if it isn't on already. Then in a random interval between 30-90 seconds, it runs
+ * the message passing protocol over Bluetooth which consists of discovering nearby devices,
+ * connecting to each of those devices and sharing messages, and then spending the rest of the time
+ * as a server that other devices can connect to.
  */
 
 public class BluetoothFragment extends Fragment {
@@ -30,6 +36,7 @@ public class BluetoothFragment extends Fragment {
     private ProtocolThread protocolThread = null;
     private ScheduledThreadPoolExecutor protocolExecutor;
     private Random random = new Random();
+    private Fragment self = this;
 
     public static boolean discoveryCompleted = false;
 
@@ -37,13 +44,6 @@ public class BluetoothFragment extends Fragment {
 
     private static ArrayList<String> seenDevices = new ArrayList<String>();
     private static ArrayList<Device> devicesList = new ArrayList<Device>();
-
-    public interface DataSender {
-        byte[] sendHandshakeOut();
-        void processReceivedHandshake(byte[] handshake);
-        byte[] sendDataOut();
-        void processReceivedData(byte[] data);
-    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,7 +69,9 @@ public class BluetoothFragment extends Fragment {
         }
     }
 
-    // Create a BroadcastReceiver for ACTION_FOUND
+    /* This receiver is used to listen to broadcasts from the system to determine such things
+     * as when discovery of other devices is complete or when a device is found via discovery.
+     */
     private final BroadcastReceiver bReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -80,7 +82,7 @@ public class BluetoothFragment extends Fragment {
                 String deviceName = device.getName();
                 if (deviceName != null && !seenDevices.contains(device.getName())) {
                     seenDevices.add(deviceName);
-                    devicesList.add(new Device(deviceName, device.getAddress(), device));
+                    devicesList.add(new Device(deviceName, device));
                     Log.d(TAG, "hello" + deviceName);
                 }
 
@@ -98,7 +100,7 @@ public class BluetoothFragment extends Fragment {
                 Log.d(TAG, "discovery is done");
                 //should connect to all devices in order
                 if (protocolThread == null) {
-                    protocolThread = new ProtocolThread(BA, devicesList, new DataHandler());
+                    protocolThread = new ProtocolThread(BA, devicesList, new DataHandler(self));
                     protocolThread.start();
                 } else if (protocolThread.getServerMode()) {
                     protocolThread.restart();
@@ -123,6 +125,9 @@ public class BluetoothFragment extends Fragment {
         }
     };
 
+    /* This function starts the bluetooth messaging protocol after a random amount of seconds
+    * between 0 to 30 and then repeats that protocol after a random but set amount of seconds
+    * (between 30 - 90 seconds). */
     private void startProtocol() {
         TimerTask timerTask = new TimerTask() {
             @Override
@@ -157,32 +162,10 @@ public class BluetoothFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-            // TODO: 2/13/16 Cancel timer
         getActivity().unregisterReceiver(bReceiver);
         protocolExecutor.shutdownNow();
-    }
-
-    public class DataHandler {
-        DataHandler() {};
-
-        byte[] getHandshake() {
-            DataSender ds = (DataSender) BluetoothFragment.this.getActivity();
-            return ds.sendHandshakeOut();
-        };
-
-        void sendHandshake(byte[] handshake) {
-            DataSender ds = (DataSender) BluetoothFragment.this.getActivity();
-            ds.processReceivedHandshake(handshake);
-        };
-
-        byte[] getData() {
-            DataSender ds = (DataSender) BluetoothFragment.this.getActivity();
-            return ds.sendDataOut();
-        };
-
-        void sendData(byte[] data) {
-            DataSender ds = (DataSender) BluetoothFragment.this.getActivity();
-            ds.processReceivedData(data);
-        };
+        if (protocolThread != null) {
+            protocolThread.stopEverything();
+        }
     }
 }

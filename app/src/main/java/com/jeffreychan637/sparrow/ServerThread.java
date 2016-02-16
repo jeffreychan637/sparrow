@@ -10,24 +10,29 @@ import java.util.UUID;
 
 /**
  * Created by jeffreychan on 2/9/16.
+ *
+ * This class is used to as a thread that acts as a server listening for other Bluetooth devices
+ * that want to connect to this device. Once a connection is initiated, the connected socket
+ * is handed to the Connection thread.
+ *
  */
 public class ServerThread extends Thread {
-    private final BluetoothServerSocket bServerSocket;
-    private final String appName = "Sparrow";
-    private final UUID appID = UUID.fromString("ae0267ba-82fe-4049-85b3-c8c1ad0ac854");
-    private final ProtocolThread protocolThread;
+    private final BluetoothServerSocket mBServerSocket;
+    private final String mAppName = "Sparrow";
+    private final UUID mAppID = UUID.fromString("ae0267ba-82fe-4049-85b3-c8c1ad0ac854");
+    private final ProtocolThread mProtocolThread;
 
     public ServerThread(BluetoothAdapter BA, ProtocolThread PR) {
-        protocolThread = PR;
+        mProtocolThread = PR;
         BluetoothServerSocket tmp = null;
         try {
-            tmp = BA.listenUsingRfcommWithServiceRecord(appName, appID);
+            tmp = BA.listenUsingRfcommWithServiceRecord(mAppName, mAppID);
         } catch (IOException e) {
             Log.d("asd", "uhh...tmp is not logged. WTF");
             this.interrupt();
         }
 
-        bServerSocket = tmp;
+        mBServerSocket = tmp;
         Log.d("asd", "start server thread");
     }
 
@@ -36,7 +41,7 @@ public class ServerThread extends Thread {
         while (true) {
             try {
                 Log.d("asd", "server thread is now listening");
-                socket = bServerSocket.accept();
+                socket = mBServerSocket.accept();
                 Log.d("asd", "accepted");
             } catch (IOException e) {
                 Log.d("asd", "exception when accepting");
@@ -46,9 +51,9 @@ public class ServerThread extends Thread {
             // If a connection was accepted
             if (socket != null) {
                 // Do work to manage the connection (in a separate thread)
-                protocolThread.manageConnection(socket, false);
+                mProtocolThread.manageConnection(socket, false);
                 try {
-                    bServerSocket.close(); //close socket because we can only have one connection at a time anyways
+                    mBServerSocket.close(); //close socket because we can only have one connection at a time anyways
                 } catch (IOException e) {
                     break;
                 }
@@ -60,7 +65,7 @@ public class ServerThread extends Thread {
     /** Will cancel the listening socket, and cause the thread to finish */
     public void cancel() {
         try {
-            bServerSocket.close();
+            mBServerSocket.close();
         } catch (IOException e) { }
     }
 }

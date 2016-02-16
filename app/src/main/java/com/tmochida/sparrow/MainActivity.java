@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Toolbar;
 
 import com.jeffreychan637.sparrow.BluetoothFragment;
+import com.jeffreychan637.sparrow.DataSender;
 import com.tmochida.sparrow.fragment.SettingsFragment;
 import com.tmochida.sparrow.fragment.TweetCreateFragment;
 import com.tmochida.sparrow.fragment.TweetListFragment;
@@ -29,7 +30,7 @@ import edu.berkeley.cs194.Handshake;
 import edu.berkeley.cs194.Tweet;
 import edu.berkeley.cs194.TweetExchange;
 
-public class MainActivity extends Activity implements TweetCreateFragment.OnUserTweetListener, BluetoothFragment.DataSender {
+public class MainActivity extends Activity implements TweetCreateFragment.OnUserTweetListener, DataSender {
     private TweetListFragment mFeedFragment;
     private Handshake mReceivedHandshake;
 
