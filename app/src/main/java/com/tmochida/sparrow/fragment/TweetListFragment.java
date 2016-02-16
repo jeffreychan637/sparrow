@@ -9,9 +9,7 @@ import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 
-import com.tmochida.sparrow.MainActivity;
 import com.tmochida.sparrow.R;
 import com.tmochida.sparrow.tweet.TweetContainer;
 import com.tmochida.sparrow.tweet.TweetStorage;
@@ -26,9 +24,9 @@ import edu.berkeley.cs194.Tweet;
  */
 public class TweetListFragment extends ListFragment {
     private static final String KEY_AUTHOR_NAME = "author_name_common";
-    private static final String KEY_AUTHOR_ID = "author_id";
+    private static final String KEY_TWEET_ID = "tweet_id";
     private static final String DEF_AUTHOR_NAME = "anonymous";
-    private static final String DEF_AUTHOR_ID = "0";
+    private static final String DEF_TWEET_ID = "0";
 
     private Context mContext;
     private SharedPreferences mSharedPrefs;
@@ -45,7 +43,7 @@ public class TweetListFragment extends ListFragment {
         String author = mSharedPrefs.getString(KEY_AUTHOR_NAME, DEF_AUTHOR_NAME);
         int id;
         try {
-            id = Integer.parseInt(mSharedPrefs.getString(KEY_AUTHOR_ID, DEF_AUTHOR_ID));
+            id = Integer.parseInt(mSharedPrefs.getString(KEY_TWEET_ID, DEF_TWEET_ID));
         } catch (Exception e) {
             id = 0;
         }
@@ -57,9 +55,8 @@ public class TweetListFragment extends ListFragment {
         mViewableTweets.add(newTweetContainer);
 
         SharedPreferences.Editor editor = mSharedPrefs.edit();
-        editor.putString(KEY_AUTHOR_ID, Integer.toString(id+1));
+        editor.putString(KEY_TWEET_ID, Integer.toString(id + 1));
         editor.apply();
-
     }
 
     @Override
