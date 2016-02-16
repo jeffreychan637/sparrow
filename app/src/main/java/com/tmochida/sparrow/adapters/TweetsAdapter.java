@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.jeffreychan637.sparrow.ExchangeState;
 import com.tmochida.sparrow.Encryption;
 import com.tmochida.sparrow.MainActivity;
 import com.tmochida.sparrow.R;
@@ -19,6 +20,9 @@ import com.tmochida.sparrow.tweet.TweetContainer;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import edu.berkeley.cs194.Tweet;
 
@@ -53,61 +57,35 @@ public class TweetsAdapter extends ArrayAdapter<TweetContainer> {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         String deviceAuthor = preferences.getString("author_name_common", "");
 
-
-        String content = null;
-        byte[] sharedSecret = null;
+        String newContent = tweet.content;
         if (tweet.encrypted) {
             if (deviceAuthor.equals(tweet.author)) {
-                content = container.getOriginalContent();
-                /*Log.d("PROTOBUFF", "device author equals author, getting from container");
-
-                // get sharedsecret from container
-                sharedSecret = container.getSharedSecret();
-                Log.d("PROTOBUFF", "secret length " + sharedSecret.length);*/
+                // Can't decrypt so we pull local stash of content
+                newContent = container.getOriginalContent();
             } else {
-                // need to decrypt with private key
-                /*PrivateKey privateKey = ((MainActivity) getContext()).getSelfPrivateKey();
-                if (privateKey != null) {
-                    String symmetric = tweet.key_symmetric;
+                // RSA encrypted, need to decrypt to get AES key
+                byte[] key_symmetric = Base64.decode(tweet.key_symmetric, Base64.DEFAULT);
+                PrivateKey pkey = ((MainActivity) getContext()).getSelfPrivateKey();
 
+                // Get AES key
+                byte[] key_bytes = Encryption.decryptRSA(key_symmetric, pkey);
+                SecretKey aes_key = new SecretKeySpec(key_bytes, 0, key_bytes.length, "AES");
+                byte[] aes_key_bytes = aes_key.getEncoded();
 
-
-                    Log.d("PROTOBUFF", "got shared key symmetric.");
-                    sharedSecret = Encryption.decryptRSA(Base64.decode(symmetric, Base64.DEFAULT), privateKey);
-                }*/
-
-                String symmetric = tweet.key_symmetric;
-                byte[] key_aes = Base64.decode(symmetric, Base64.DEFAULT);
                 try {
-                    content = new String(Encryption.decrypt(key_aes, Base64.decode(tweet.content, Base64.DEFAULT)));
+                    // Decrypt content with AES key
+                    byte[] content_bytes = Base64.decode(tweet.content, Base64.DEFAULT);
+                    byte[] decodedData = Encryption.decrypt(aes_key_bytes, content_bytes);
+                    newContent = new String(decodedData, "UTF-8");
                 } catch (Exception e) {
-                    Log.d("PROTOBUFF", "error! " + key_aes.length);
-                    e.printStackTrace();
+                    Log.d("PROTOBUFF", "decode ERROR!");
                 }
             }
         }
-        //Log.d("PROTOBUFF", "shared Secret: " + sharedSecret.length());
-        //Log.d("PROTOBUFF", ""+sharedSecret.getBytes().length);
-        /*if (sharedSecret != null) {
-            Log.d("PROTOBUFF", "decrypting length: " + sharedSecret.length);
-
-            // decrypt content
-            try {
-                content = new String(Encryption.decrypt(sharedSecret, tweet.content.getBytes()));
-            } catch (Exception e) {
-                Log.d("PROTOBUFF", "error! " + sharedSecret.length);
-                e.printStackTrace();
-            }
-        }*/
-
-        Log.d("PROTOBUFF", "recipient " + tweet.recipient);
-        Log.d("PROTOBUFF", "content is : " + content);
-        Log.d("PROTOBUFF", "original content is : " + tweet.content + "\n");
-
-        tweetAuthor.setText(author);
-        tweetConent.setText(content);
 
         // Return the completed view to render on screen
+        tweetAuthor.setText(author);
+        tweetConent.setText(newContent);
         return convertView;
     }
 }

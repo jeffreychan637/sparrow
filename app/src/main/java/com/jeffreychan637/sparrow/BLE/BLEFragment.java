@@ -11,7 +11,7 @@ import android.os.Bundle;
  *
  * This class starts the BluetoothLE message passing protocol.
  */
-public class BleFragment extends Fragment {
+public class BLEFragment extends Fragment {
     private final String TAG = "BleFragment";
     private BluetoothAdapter mBluetoothAdapter;
     private CentralDevice mCentralDevice;

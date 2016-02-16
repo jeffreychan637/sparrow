@@ -72,11 +72,12 @@ public class TweetListFragment extends ListFragment {
         }
 
         boolean encrypt = mSharedPrefs.getBoolean(KEY_USE_ENCRYPT, false);
-        Log.d("PROTOBUFF", "encrypt? " + encrypt);
-
         boolean encryptedData = false;
+
+
         keySharedSecret = "";
         signature = "";
+
         byte[] key = null;
         String newContent = content;
         if (encrypt && recipient.length() > 0) {
@@ -86,8 +87,8 @@ public class TweetListFragment extends ListFragment {
                 // can send encrypted message
                 try {
                     // get secret key for AES
-                    byte[] iv = "MUCH WOW".getBytes();
-                    byte[] data = content.getBytes();
+                    byte[] iv = "MUCH WOW".getBytes("UTF-8");
+                    byte[] data = content.getBytes("UTF-8");
                     KeyGenerator kGen = KeyGenerator.getInstance("AES");
                     SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
                     sr.setSeed(iv);
@@ -97,13 +98,21 @@ public class TweetListFragment extends ListFragment {
 
                     byte[] encryptedContent = Encryption.encrypt(data);
                     newContent = Base64.encodeToString(encryptedContent, Base64.DEFAULT);
+
+                    byte[] decoded = Base64.decode(newContent, Base64.DEFAULT);
+                    byte[] decodedData = Encryption.decrypt(key, decoded);
+
+                    Log.d("PROTOBUFF", "content: " + content);
+                    Log.d("PROTOBUFF", "encoded content: " + newContent);
+                    Log.d("PROTOBUFF", "decoded: " + new String(decodedData, "UTF-8"));
+
                     encryptedData = true;
 
                     keySharedSecret = Base64.encodeToString(key, Base64.DEFAULT);
 
                     // encrypt AES key using RSA
-                    //byte[] encryptedSecret = Encryption.encryptRSA(key, pkey);
-                    //keySharedSecret = Base64.encodeToString(encryptedSecret, Base64.DEFAULT);
+                    byte[] encryptedSecret = Encryption.encryptRSA(key, pkey);
+                    keySharedSecret = Base64.encodeToString(encryptedSecret, Base64.DEFAULT);
 
                 } catch (Exception e) {
                     Log.e("PROTOBUFF", "Exception caught");

@@ -58,7 +58,7 @@ public class MainActivity extends Activity implements OnUserTweetListener, OnPub
 
     @Override
     public void changeBleMode(boolean use_ble) {
-        changeBluetoothMode(use_ble);
+        ;
     }
 
     @Override
@@ -234,34 +234,6 @@ public class MainActivity extends Activity implements OnUserTweetListener, OnPub
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public void changeBluetoothMode(boolean ble) {
-        FragmentManager manager = getFragmentManager();
-        FragmentTransaction transaction;
-        Fragment f;
-
-        if (ble && getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            // kill bluetooth fragment, add BLE fragment
-            f = manager.findFragmentById(R.layout.fragment_bluetooth);
-            if (f != null && f instanceof BluetoothFragment) {
-                // killit
-            }
-
-            // start BLE fragment
-        } else {
-            // kill BLE fragment if alive
-
-            // start BluetoothFragment
-            f = manager.findFragmentById(R.layout.fragment_bluetooth);
-            if (f != null && f instanceof BluetoothFragment) {
-                return;
-            }
-            BluetoothFragment BT = new BluetoothFragment();
-            transaction = getFragmentManager().beginTransaction();
-            transaction.add(BT, NAME_BLUETOOTH);
-            transaction.commit();
-        }
     }
 
     public byte[] sendHandshakeOut() {
