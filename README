@@ -1,0 +1,29 @@
+How To Build, Run, and Test Sparrow:
+
+1. Import the tarball into Android Studio.
+2. Under the "Run" menu, click run to build and run the app on your connected
+   physical devices.
+3. To test and check out Sparrow, simply create a tweet (tap the plus button)
+   and watch as it travels from one phone to another. To test advanced
+   features, go into the settings menu. (You can open the various menu
+   screens available by hitting the dots in the upper right corner)
+
+A Note on Design and Extra Features
+Within our implementation of BASIC, our devices are constantly either listening
+for other devices as a server or connecting to local devices just discovered
+as clients. All of this runs in the background without any user intervention
+besides occasional popups to make the device discoverable to other devices
+in the area (In fact, it would only take one more line of code to have to
+only ever ask the user once to make device discoverable and never show
+another dialog, but we felt battery life was more important here).
+
+As our extra features, we tried to implement both encryption and BLE. In
+regards to BLE, the code is almost all there and it theoretically should work,
+but in practice, it does not work (There are issues with getting the
+peripheral device to respond with services available). We'd be happy to talk
+more about this, but this is just so you know that we tried our best on BLE,
+but it technically does not work, although we do believe we're just a bug or
+two away from getting it to work. We understand that there's no way we should
+get full credit for our implementation of BLE, but given that it is mostly there
+and that we pretty much implemented BASIC with no user intervention, we would
+really appreciate consideration for partial credit for the work put in.
