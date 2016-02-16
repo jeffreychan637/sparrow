@@ -54,7 +54,7 @@ public class TweetStorage {
         }
     }
 
-    public ArrayList<KeyPairContainer> loadKeys(Context context, boolean self) {
+    public ArrayList<KeyPairContainer> loadKeyPairs(Context context, boolean self) {
         ArrayList<KeyPairContainer> keys;
 
         File file = new File(context.getFilesDir(), getKeyPairFileName(self));

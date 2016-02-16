@@ -1,24 +1,42 @@
-package com.tmochida.sparrow.fragment;
+package com.tmochida.sparrow.fragments;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
+import android.util.Log;
 
 import com.tmochida.sparrow.R;
+import com.tmochida.sparrow.interfaces.OnChangeSettingsListener;
 
 /**
  * Fragment for settings menu
  */
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+    private OnChangeSettingsListener mCallback;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mCallback = (OnChangeSettingsListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnChangeSettingsListener");
+        }
     }
 
     @Override
@@ -39,8 +57,20 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     }
 
     @Override
+    public void onDestroy() {
+        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
+    }
+
+    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updatePreference(findPreference(key), key);
+
+
+        if ("use_ble".equals(key)) {
+            boolean use_ble = sharedPreferences.getBoolean(key, false);
+            mCallback.changeBleMode(use_ble);
+        }
     }
 
     private void updatePreference(Preference preference, String key) {

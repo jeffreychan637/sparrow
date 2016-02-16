@@ -8,23 +8,27 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     android:clickable="true"
-    android:id="@+id/fragment_tweet" >
+    android:id="@+id/fragment_key_add" >
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add a public key" />
     <EditText
-        android:id="@+id/recipientText"
-        android:hint="Recipient author (for DM only)"
+        android:id="@+id/key_add_author"
+        android:hint="Author tied to public key"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <EditText
-        android:id="@+id/contentText"
-        android:hint="Enter tweet"
+        android:id="@+id/key_add_public"
+        android:hint="Enter public key"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/tweetBtn"
-        android:text="Send Tweet"
+        android:id="@+id/addKeyBtn"
+        android:text="Add Key"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

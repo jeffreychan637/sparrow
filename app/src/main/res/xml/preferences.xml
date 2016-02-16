@@ -6,6 +6,7 @@
         android:title="TWEET ID">
 
         <EditTextPreference
+            android:id="@+id/tweet_id"
             android:key="tweet_id"
             android:title="Tweet ID"
             android:summary="Set tweet ID"
@@ -17,6 +18,7 @@
         android:title="AUTHOR INFORMATION">
 
         <EditTextPreference
+            android:id="@+id/author_name_common"
             android:key="author_name_common"
             android:title="Author name"
             android:summary="Set author name"
@@ -28,9 +30,21 @@
         android:title="ENCRYPTION">
 
         <CheckBoxPreference
+            android:id="@+id/encryption_use"
             android:key="encryption_use"
             android:title="Use encryption"
             android:summary="Encrypt Direct Messages with a Private Key"
+            android:defaultValue="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="BLUETOOTH LOW ENERGY">
+
+        <CheckBoxPreference
+            android:id="@+id/use_ble"
+            android:key="use_ble"
+            android:title="Use Bluetooth Low Energy (BLE)"
+            android:summary="Use BLE for communication"
             android:defaultValue="false" />
     </PreferenceCategory>
 
