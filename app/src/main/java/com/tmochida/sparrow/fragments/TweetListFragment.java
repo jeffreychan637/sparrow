@@ -102,18 +102,13 @@ public class TweetListFragment extends ListFragment {
                     byte[] decoded = Base64.decode(newContent, Base64.DEFAULT);
                     byte[] decodedData = Encryption.decrypt(key, decoded);
 
-                    Log.d("PROTOBUFF", "content: " + content);
-                    Log.d("PROTOBUFF", "encoded content: " + newContent);
-                    Log.d("PROTOBUFF", "decoded: " + new String(decodedData, "UTF-8"));
-
-                    encryptedData = true;
-
                     keySharedSecret = Base64.encodeToString(key, Base64.DEFAULT);
 
                     // encrypt AES key using RSA
                     byte[] encryptedSecret = Encryption.encryptRSA(key, pkey);
                     keySharedSecret = Base64.encodeToString(encryptedSecret, Base64.DEFAULT);
 
+                    encryptedData = true;
                 } catch (Exception e) {
                     Log.e("PROTOBUFF", "Exception caught");
                 }

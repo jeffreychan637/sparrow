@@ -2,6 +2,7 @@ package com.tmochida.sparrow.adapters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
@@ -11,14 +12,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.jeffreychan637.sparrow.ExchangeState;
 import com.tmochida.sparrow.Encryption;
 import com.tmochida.sparrow.MainActivity;
 import com.tmochida.sparrow.R;
 import com.tmochida.sparrow.tweet.TweetContainer;
 
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.ArrayList;
 
 import javax.crypto.SecretKey;
@@ -30,6 +29,11 @@ import edu.berkeley.cs194.Tweet;
  * TweetsAdapter
  */
 public class TweetsAdapter extends ArrayAdapter<TweetContainer> {
+    private static final int COLOR_ALERT = Color.RED;
+    private static final int COLOR_WARN = Color.YELLOW;
+    private static final int COLOR_INSECURE = Color.GRAY;
+    private static final int COLOR_VERIFIED = Color.GREEN;
+
     private Context mContext;
 
     public TweetsAdapter(Context context, int viewResourceId, ArrayList<TweetContainer> tweets) {
@@ -60,17 +64,27 @@ public class TweetsAdapter extends ArrayAdapter<TweetContainer> {
         String newContent = tweet.content;
         if (tweet.encrypted) {
             if (deviceAuthor.equals(tweet.author)) {
-                // Can't decrypt so we pull local stash of content
+                // DM sent from device. Can't decrypt so we pull local stash of content
                 newContent = container.getOriginalContent();
+                convertView.setBackgroundColor(COLOR_VERIFIED);
             } else {
+                convertView.setBackgroundColor(COLOR_VERIFIED);
+
                 // RSA encrypted, need to decrypt to get AES key
                 byte[] key_symmetric = Base64.decode(tweet.key_symmetric, Base64.DEFAULT);
                 PrivateKey pkey = ((MainActivity) getContext()).getSelfPrivateKey();
+                if (pkey == null) {
+                    convertView.setBackgroundColor(Color.YELLOW);
+                }
 
                 // Get AES key
+                SecretKey aes_key = null;
+                byte[] aes_key_bytes = null;
                 byte[] key_bytes = Encryption.decryptRSA(key_symmetric, pkey);
-                SecretKey aes_key = new SecretKeySpec(key_bytes, 0, key_bytes.length, "AES");
-                byte[] aes_key_bytes = aes_key.getEncoded();
+                if (key_bytes != null) {
+                    aes_key = new SecretKeySpec(key_bytes, 0, key_bytes.length, "AES");
+                    aes_key_bytes = aes_key.getEncoded();
+                }
 
                 try {
                     // Decrypt content with AES key
@@ -78,11 +92,12 @@ public class TweetsAdapter extends ArrayAdapter<TweetContainer> {
                     byte[] decodedData = Encryption.decrypt(aes_key_bytes, content_bytes);
                     newContent = new String(decodedData, "UTF-8");
                 } catch (Exception e) {
-                    Log.d("PROTOBUFF", "decode ERROR!");
+                    // Error i.e. wrong key, alert user
+                    convertView.setBackgroundColor(COLOR_ALERT);
                 }
             }
         }
-
+done:
         // Return the completed view to render on screen
         tweetAuthor.setText(author);
         tweetConent.setText(newContent);

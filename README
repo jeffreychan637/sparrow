@@ -1,9 +1,23 @@
 How To Build, Run, and Test Sparrow:
 
+1. Extract tarball
+2. In root scope of the project, run './gradlew installDebug'
+3. Launch app
+4. Open settings and change author name to something other than "anonymous".
+   You can also increase the tweet ID to an integer value.
+5. Restart the app (remove it from apps list) because of the awesome UI.
+6. Start tweeting by tapping the Floating Action Button at the bottom right.
+
+Testing
+There are several unit tests in the androidTest directory. Run them with 
+'./gradlew testAll'.
+
+----- Android Studio -----
 1. Import the tarball into Android Studio.
 2. Under the "Run" menu, click run to build and run the app on your connected
    physical devices.
-3. To test and check out Sparrow, simply create a tweet (tap the plus button)
+3. Open Settings, tap on "Author name" to change author name from anonymous.
+4. To test and check out Sparrow, simply create a tweet (tap the plus button)
    and watch as it travels from one phone to another. To test advanced
    features, go into the settings menu. (You can open the various menu
    screens available by hitting the dots in the upper right corner)
@@ -27,3 +41,23 @@ two away from getting it to work. We understand that there's no way we should
 get full credit for our implementation of BLE, but given that it is mostly there
 and that we pretty much implemented BASIC with no user intervention, we would
 really appreciate consideration for partial credit for the work put in.
+
+Encryption is functioning with RSA+AES. AES is used to encrypt the content of the
+tweet, and the symmetric key is encrypted by the recipient's RSA public key.
+That way, only the private key's owner can decrypt the AES key. Our code has the
+capacity to ensure authenticity by checking the signature, but it is not enabled
+yet.
+
+
+----- Advanced Features -----
+Encryption
+1. Tap toolbar->"View Your Public Key". Long press the String to copy to clipboard.
+2. Send it to another person via some medium (you can tweet it too!).
+3. To add someone else's public key, go to toolbar->"Add Public Key".
+   Enter author and public key information.
+4. You can view list of stored public keys in toolbar->"View Keys".
+5. Go to Settings, check "Use encryption".
+6. Direct messages to authors with their public key will be encrypted.
+
+BLE
+-Coming soon

@@ -114,6 +114,7 @@ public class BluetoothFragment extends Fragment {
     private void makeSelfDiscoverable() {
         if (BA.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
             Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600);
             startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE); //make oneself discoverable
         }
     };
@@ -129,7 +130,7 @@ public class BluetoothFragment extends Fragment {
             }
         };
         protocolExecutor =  new ScheduledThreadPoolExecutor(1);
-        int interval = randomInt(30, 90);
+        int interval = randomInt(10, 40);
         int startDelay = randomInt(0, 20);
         protocolExecutor.scheduleWithFixedDelay(timerTask, startDelay, interval, TimeUnit.SECONDS);
 

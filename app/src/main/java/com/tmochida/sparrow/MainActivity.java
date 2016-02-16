@@ -5,7 +5,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -54,7 +53,6 @@ public class MainActivity extends Activity implements OnUserTweetListener, OnPub
     private static final String NAME_BLE = "bleFragment";
     
     private TweetListFragment mFeedFragment;
-    private Handshake mReceivedHandshake;
 
     @Override
     public void changeBleMode(boolean use_ble) {
@@ -236,6 +234,7 @@ public class MainActivity extends Activity implements OnUserTweetListener, OnPub
         return super.onOptionsItemSelected(item);
     }
 
+    /* Returns a Handshake as byte[] encoded as payload for protocol buffer. */
     public byte[] sendHandshakeOut() {
         List<Feature> features = new ArrayList<>();
         features.add(Feature.BASIC);
@@ -243,9 +242,11 @@ public class MainActivity extends Activity implements OnUserTweetListener, OnPub
         return payload;
     };
 
+    /* Takes an encoded HandShake. Useful in future if extensions
+     * depend on a specific feature to be enabled.*/
     public void processReceivedHandshake(byte[] data) {
         try {
-            mReceivedHandshake = Handshake.ADAPTER.decode(data);
+            Handshake handshake = Handshake.ADAPTER.decode(data);
         } catch (IOException e) {
             e.printStackTrace();
         }
