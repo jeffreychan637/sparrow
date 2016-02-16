@@ -95,7 +95,7 @@ public class TweetListFragment extends ListFragment {
                     SecretKey skey = kGen.generateKey();
                     key = skey.getEncoded();
 
-                    byte[] encryptedContent = Encryption.encrypt(key, data);
+                    byte[] encryptedContent = Encryption.encrypt(data);
                     newContent = Base64.encodeToString(encryptedContent, Base64.DEFAULT);
                     encryptedData = true;
 

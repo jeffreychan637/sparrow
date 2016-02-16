@@ -3,7 +3,6 @@ package com.jeffreychan637.sparrow;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.util.Log;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -29,7 +28,6 @@ public class ConnectThread extends Thread {
 
         // Get a BluetoothSocket to connect with the given BluetoothDevice
         try {
-            Log.d("connect", "setting up socket" );
             tmp = device.createRfcommSocketToServiceRecord(mAppID);
         } catch (IOException e) { }
         mBSocket = tmp;
@@ -42,16 +40,12 @@ public class ConnectThread extends Thread {
                 mBluetoothAdaptor.cancelDiscovery();
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
-                Log.d("connect", "trying to connect socket" );
                 mBSocket.connect();
-                Log.d("connect", "connected socket - now want to manage connection");
                 mProtocolThread.manageConnection(mBSocket, true);
             } catch (IOException connectException) { //occurs in 12 seconds if connection fails
                 try {
                     mBSocket.close();
-                    Log.d("ConnectThread", "Connection failed; closing socket");
                 } catch (IOException closeException) {
-                    Log.d("ConnectThread", "Exception when connecting");
                 } finally {
                     mWaitOn.notify();
                 }

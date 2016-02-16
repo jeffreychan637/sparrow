@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -40,8 +39,6 @@ public class BluetoothFragment extends Fragment {
 
     public static boolean discoveryCompleted = false;
 
-    private final String TAG = "BTFrag";
-
     private static ArrayList<String> seenDevices = new ArrayList<String>();
     private static ArrayList<Device> devicesList = new ArrayList<Device>();
 
@@ -63,7 +60,6 @@ public class BluetoothFragment extends Fragment {
                 Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBT, REQUEST_BLUETOOTH);
             } else {
-                Log.d(TAG, "Bluetooth already enabled");
                 startProtocol();
             }
         }
@@ -83,7 +79,6 @@ public class BluetoothFragment extends Fragment {
                 if (deviceName != null && !seenDevices.contains(device.getName())) {
                     seenDevices.add(deviceName);
                     devicesList.add(new Device(deviceName, device));
-                    Log.d(TAG, "hello" + deviceName);
                 }
 
             } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) { //Bluetooth turned on
@@ -97,7 +92,6 @@ public class BluetoothFragment extends Fragment {
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) { //Discovery done
                 discoveryCompleted = true;
-                Log.d(TAG, "discovery is done");
                 //should connect to all devices in order
                 if (protocolThread == null) {
                     protocolThread = new ProtocolThread(BA, devicesList, new DataHandler(self));
@@ -111,7 +105,6 @@ public class BluetoothFragment extends Fragment {
 
     private void runDiscovery() {
         protocolThread = null;
-        Log.d(TAG, "running discovery");
         devicesList = new ArrayList<Device>();
         seenDevices = new ArrayList<String>();
         makeSelfDiscoverable();
@@ -138,8 +131,6 @@ public class BluetoothFragment extends Fragment {
         protocolExecutor =  new ScheduledThreadPoolExecutor(1);
         int interval = randomInt(30, 90);
         int startDelay = randomInt(0, 20);
-        Log.d(TAG, "random interval: " + interval);
-        Log.d(TAG, "start delay: " + startDelay);
         protocolExecutor.scheduleWithFixedDelay(timerTask, startDelay, interval, TimeUnit.SECONDS);
 
     }

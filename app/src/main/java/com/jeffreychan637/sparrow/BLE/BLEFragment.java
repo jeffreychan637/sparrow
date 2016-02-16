@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 
 /**
  * Created by jeffreychan on 2/15/16.
@@ -30,7 +29,6 @@ public class BleFragment extends Fragment {
                 Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBT, 1);
             } else {
-                Log.d(TAG, "Bluetooth already enabled");
             }
 
             if (Build.MANUFACTURER.equals("LGE")) {

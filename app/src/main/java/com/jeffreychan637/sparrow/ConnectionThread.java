@@ -1,7 +1,6 @@
 package com.jeffreychan637.sparrow;
 
 import android.bluetooth.BluetoothSocket;
-import android.util.Log;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -37,7 +36,6 @@ public class ConnectionThread extends Thread {
             tmpOut = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
-            Log.d("con", "error with tmpIN/OUT");
         }
 
         mInStream = tmpIn;
@@ -56,48 +54,35 @@ public class ConnectionThread extends Thread {
         synchronized (mWaitOn) {
             while (true) {
                 try {
-                    Log.d("connection made", "actually trying to read data coming in");
                     if (!knowMessageLength) {
                         knowMessageLength = true;
                         bytesInMessage = mInStream.readInt();
-                        Log.d("connection", "initial bytes read =  " + bytesInMessage);
                         buffer = new byte[bytesInMessage];
-                        Log.d("connection", "created byte array of size: " + bytesInMessage);
                     }
                     bytesRead += mInStream.read(buffer, bytesRead, buffer.length - bytesRead);
-                    Log.d("connection", "total Bytes read = " + bytesRead);
-                    Log.d("ds", Arrays.toString(buffer));
                     if (bytesRead == bytesInMessage) {
                         int currentExchangeState = mProtocolThread.getExchangeState();
                         if (currentExchangeState == ExchangeState.NOT_EXCHANGING && !mIsClient) {
                             mProtocolThread.setExchangeState(ExchangeState.GOT_HANDSHAKE);
                             mProtocolThread.sendHandshake(buffer);
-                            Log.d("connection made", "got handshake!");
                             write(mProtocolThread.getHandshake());
                         } else if (currentExchangeState == ExchangeState.SENT_HANDSHAKE) {
                             if (mIsClient) {
                                 mProtocolThread.setExchangeState(ExchangeState.GOT_HANDSHAKE);
-                                Log.d("connection made", "got handshake!");
                                 mProtocolThread.sendHandshake(buffer);
                             } else {
-                                Log.d("connection made", "got data!");
                                 mProtocolThread.setExchangeState(ExchangeState.GOT_DATA);
                                 mProtocolThread.sendData(buffer);
                             }
                             write(mProtocolThread.getData());
                         } else if (currentExchangeState == ExchangeState.SENT_DATA && mIsClient) {
                             mProtocolThread.setExchangeState(ExchangeState.GOT_DATA);
-                            Log.d("connection made", "got data!");
                             mProtocolThread.sendData(buffer);
-                            Log.d("connection thread", "DONE, CLOSING CONNECTION.");
                             mProtocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
                             mProtocolThread.stopEverything();
                             mWaitOn.notify();
                             break;
                             //ASSUMES WE WILL ONLY EVER EXCHANGE DATA ONCE
-                        } else {
-                            Log.d("got data", "got data...but no exchange state");
-                            Log.d("got data", "CURRENT EXCHANGE STATE " + mProtocolThread.getExchangeState());
                         }
                         bytesInMessage = 0;
                         bytesRead = 0;
@@ -119,15 +104,7 @@ public class ConnectionThread extends Thread {
     public void write(byte[] bytes) {
         try {
             int currentState = mProtocolThread.getExchangeState();
-            Log.d("ds", Arrays.toString(bytes));
-            Log.d("ds", String.valueOf(mOutStream.size()));
-            if (mIsClient) {
-                Log.d("ds", "Is client");
-            } else {
-                Log.d("ds", "Is NOT client");
-            }
             mOutStream.writeInt(bytes.length);
-            Log.d("write", "sent byte length of " + bytes.length);
             mOutStream.write(bytes);
             if (currentState == ExchangeState.NOT_EXCHANGING && mIsClient) {
                 mProtocolThread.setExchangeState(ExchangeState.SENT_HANDSHAKE);
@@ -137,16 +114,13 @@ public class ConnectionThread extends Thread {
                 } else {
                     mProtocolThread.setExchangeState(ExchangeState.SENT_HANDSHAKE);
                 }
-                Log.d("asd", "isclient " + mIsClient);
             } else if (currentState == ExchangeState.GOT_DATA && !mIsClient) {
                 mProtocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
                 mProtocolThread.stopEverything(); //ASSUMES WE WILL ONLY EVER EXCHANGE DATA ONCE
                 mProtocolThread.startServer();
-                Log.d("connection thread", "DONE, CLOSING CONNECTION.");
             }
         } catch (IOException e) {
             mProtocolThread.setExchangeState(ExchangeState.NOT_EXCHANGING);
-            Log.d("connection made", "exception when sending data" + e.toString());
             if (mIsClient) {
                 mWaitOn.notify();
             }

@@ -91,13 +91,11 @@ public class PeripheralDevice {
         @Override
         public void onStartSuccess(AdvertiseSettings advertiseSettings) {
             String successMsg = "Advertisement command attempt successful";
-            Log.d("peri", successMsg);
         }
 
         @Override
         public void onStartFailure(int i) {
             String failMsg = "Advertisement command attempt failed: " + i;
-            Log.e("peri", failMsg);
         }
     };
 
@@ -116,11 +114,9 @@ public class PeripheralDevice {
         public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
             if (mExchangeState == ExchangeState.GOT_HANDSHAKE) {
-                Log.d("peri", "sent handshake");
                 characteristic.setValue(mDataHandler.getHandshake());
                 mExchangeState = ExchangeState.SENT_HANDSHAKE;
             } else if (mExchangeState == ExchangeState.GOT_DATA) {
-                Log.d("peri", "sent data");
                 characteristic.setValue(mDataHandler.getData());
                 mExchangeState = ExchangeState.NOT_EXCHANGING;
             }
@@ -131,11 +127,9 @@ public class PeripheralDevice {
         public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId, BluetoothGattCharacteristic characteristic, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
             super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value);
             if (mExchangeState == ExchangeState.NOT_EXCHANGING) {
-                Log.d("peri", "got handshake");
                 mDataHandler.sendHandshake(characteristic.getValue());
                 mExchangeState = ExchangeState.GOT_HANDSHAKE;
             } else if (mExchangeState == ExchangeState.SENT_HANDSHAKE) {
-                Log.d("peri", "got data");
                 mDataHandler.sendData(characteristic.getValue());
                 mExchangeState = ExchangeState.GOT_DATA;
             }
@@ -157,7 +151,6 @@ public class PeripheralDevice {
         startServer();
         mAdvertiser.startAdvertising(mSettings, mData, mAdvertiseCallback);
         mAdvertising = true;
-        Log.d("peri", "advertising started");
     }
 
     public void stopAdvertising() {

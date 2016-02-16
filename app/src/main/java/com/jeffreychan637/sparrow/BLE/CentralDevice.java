@@ -56,7 +56,6 @@ public class CentralDevice {
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
             mdevices.add(result.getDevice());
-            Log.d("cen", "discovered device " + result.getDevice().getName());
         }
     };
 
@@ -68,7 +67,6 @@ public class CentralDevice {
             public void run() {
                 mScanning = false;
                 mBluetootherLeScanner.stopScan(mScanCallback);
-                Log.d("cen", "ending scan; device found: " + mdevices.size());
                 for (int i = 0; i < mdevices.size(); i++) {
                     connectToDevice(mdevices.get(i));
                 }
@@ -85,9 +83,7 @@ public class CentralDevice {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
             mService = mBluetoothGatt.getService(BleUuids.SERVICE_UUID);
-            Log.d("cen", "2sending handshake from client side");
             mHandshakeChar = mService.getCharacteristic(BleUuids.HANDSHAKE_CHAR_UUID);
-            Log.d("cen", "3sending handshake from client side");
             mDataChar = mService.getCharacteristic(BleUuids.DATA_CHAR_UUID);
             getHandshake();
         }
@@ -97,22 +93,17 @@ public class CentralDevice {
             synchronized (mWaitOn) {
                 super.onCharacteristicRead(gatt, characteristic, status);
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    Log.d("cen", "read succeeded");
                     if (mExchangeState == ExchangeState.SENT_HANDSHAKE) {
                         mExchangeState = ExchangeState.GOT_HANDSHAKE;
-                        Log.d("cen", "got handshake!");
                         mDataHandler.sendHandshake(characteristic.getValue());
                         sendData();
                     } else if (mExchangeState == ExchangeState.SENT_DATA) {
                         mExchangeState = ExchangeState.GOT_DATA;
-                        Log.d("cen", "got data!");
                         mDataHandler.sendData(characteristic.getValue());
                         mBluetoothGatt.disconnect();
                         mExchangeState = ExchangeState.NOT_EXCHANGING;
                         mWaitOn.notify();
                     }
-                } else {
-                    Log.d("cen", "read failed " + status);
                 }
             }
         }
@@ -139,9 +130,7 @@ public class CentralDevice {
     };
 
     private void connectToDevice(BluetoothDevice device) {
-        Log.d("cen", "connecting to device " + device.getName());
         mBluetoothGatt = device.connectGatt(mfragement.getActivity(), false, mGattCallback);
-        Log.d("cen", "1sending handshake from client side");
 //        mService = mBluetoothGatt.getService(BleUuids.SERVICE_UUID);
 //        Log.d("cen", "2sending handshake from client side");
 //        Log.d("cen", "2" + mService);
@@ -161,7 +150,6 @@ public class CentralDevice {
     private void getHandshake() {
         mBluetoothGatt.readCharacteristic(mHandshakeChar);
         mExchangeState = ExchangeState.SENT_HANDSHAKE;
-        Log.d("cen", "trying to get handshake");
     }
 
     private void getData() {
@@ -180,7 +168,6 @@ public class CentralDevice {
     }
 
     public void close() {
-        Log.d("cen", "closing central device");
         if (mScanning) {
             mBluetootherLeScanner.stopScan(mScanCallback);
         }

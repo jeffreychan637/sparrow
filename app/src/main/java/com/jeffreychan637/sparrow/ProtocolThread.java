@@ -3,7 +3,6 @@ package com.jeffreychan637.sparrow;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -40,8 +39,6 @@ public class ProtocolThread extends Thread {
 
     /* This function runs through the list of devices and initiates connections to them. */
     public void run() {
-        Log.d("run", "running Protocol");
-        Log.d("run", " mDevices size " + mDevices.size());
         stopEverything();
         for (int i = 0; i < mDevices.size(); i++) {
             mServerMode = false;
@@ -63,7 +60,6 @@ public class ProtocolThread extends Thread {
             mConnectThread = new ConnectThread(device, BA, this, mWaitOn);
             synchronized (mWaitOn) {
                 mConnectThread.start();
-                Log.d("protocol", "hello initiate connection " + device.getName());
                 try {
                     mWaitOn.wait();
                     stopEverything(); //If this is returned, means that communication with one device is done so kill everything
@@ -74,13 +70,10 @@ public class ProtocolThread extends Thread {
     }
 
     public void manageConnection(BluetoothSocket socket, boolean isClient) {
-        Log.d("proto", "start managing connection");
         mConnectionThread = new ConnectionThread(socket, mWaitOn, this, isClient);
-        Log.d("proto", "start connection thread");
         mConnectionThread.start();
         if (isClient) {
             byte[] handshake = mDataHandler.getHandshake();
-            Log.d("proto", "sent handshake " + handshake.toString());
             mConnectionThread.write(handshake);
         }
     }
@@ -89,7 +82,6 @@ public class ProtocolThread extends Thread {
         if (mServerThread == null || !mServerThread.isInterrupted()) {
             mServerMode = true;
             stopEverything();
-            Log.d("sad", "starting server");
             mServerThread = new ServerThread(mBluetoothAdapter, this);
             mServerThread.start();
         }
@@ -126,7 +118,6 @@ public class ProtocolThread extends Thread {
 
     /* Shuts down all the threads. */
     public synchronized void stopEverything() {
-        Log.d("sad", "KILLING EVERYTHING.");
         stopConnect();
         stopConnection();
         stopServer();

@@ -3,7 +3,6 @@ package com.jeffreychan637.sparrow;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.util.Log;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -28,23 +27,18 @@ public class ServerThread extends Thread {
         try {
             tmp = BA.listenUsingRfcommWithServiceRecord(mAppName, mAppID);
         } catch (IOException e) {
-            Log.d("asd", "uhh...tmp is not logged. WTF");
             this.interrupt();
         }
 
         mBServerSocket = tmp;
-        Log.d("asd", "start server thread");
     }
 
     public void run() {
         BluetoothSocket socket = null;
         while (true) {
             try {
-                Log.d("asd", "server thread is now listening");
                 socket = mBServerSocket.accept();
-                Log.d("asd", "accepted");
             } catch (IOException e) {
-                Log.d("asd", "exception when accepting");
                 break;
             }
             if (interrupted()) break;
